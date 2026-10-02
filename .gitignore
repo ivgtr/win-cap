@@ -6,6 +6,7 @@
 
 # Recorded videos
 *.mp4
+!docs/assets/demo.mp4
 
 # Local environment and tool settings
 .env
@@ -15,6 +16,9 @@
 /.codex/
 /.agents/
 __pycache__/
+node_modules/
+/tools/demo/.cache/
+/tools/demo/.work/
 
 # OS metadata
 .DS_Store

@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>win-cap 操作モック</title>
+  <link rel="stylesheet" href="mock.css">
+</head>
+<body>
+  <header>
+    <div class="brand"><strong>win-cap</strong><span>画面の一部を、MP4に。</span></div>
+    <span class="mock-label">操作モック</span>
+  </header>
+  <main id="desktop" aria-label="デモ用デスクトップ">
+    <section id="sample" class="window sample-window">
+      <div class="titlebar"><span>操作手順.txt — メモ帳</span><span class="window-buttons">—　□　×</span></div>
+      <div class="menubar">ファイル　編集　書式　表示　ヘルプ</div>
+      <div class="document">
+        <h1>画面の一部を共有する</h1>
+        <p>必要なところだけ、短い動画に。</p>
+        <div id="checklist" class="checklist"></div>
+        <div class="document-rule"></div>
+        <p class="document-note">録画対象のサンプル画面</p>
+      </div>
+    </section>
+
+    <section id="controller" class="window controller" aria-label="win-cap 操作画面">
+      <div class="titlebar"><span id="app-title"></span><span class="window-buttons">—　×</span></div>
+      <div class="client">
+        <div id="region-label" class="region-label">範囲未選択</div>
+        <button id="select-button" class="select-button">範囲を選択</button>
+        <button id="record-button" class="record-button" disabled>録画開始</button>
+        <label class="fps-label" for="fps">フレームレート</label>
+        <select id="fps" aria-label="フレームレート"><option value="30">30 fps</option><option value="60">60 fps</option></select>
+        <label class="cursor-label"><input id="include-cursor" type="checkbox" checked>カーソルを含める</label>
+        <div id="status" class="status">範囲を選び、録画を開始してください。</div>
+        <div class="hotkeys">開始/停止: Ctrl + Shift + F9　停止: Ctrl + Shift + F10</div>
+      </div>
+    </section>
+
+    <div id="selection-overlay" hidden>
+      <div class="selection-caption">ドラッグで範囲選択（1つのモニター内） / Escでキャンセル</div>
+      <div id="selection-rect"></div>
+    </div>
+
+    <div id="modal-background" hidden></div>
+    <section id="save-dialog" class="window save-dialog" role="dialog" aria-label="録画を保存（新しいファイル名）" hidden>
+      <div class="titlebar"><span>録画を保存（新しいファイル名）</span><span class="window-buttons">×</span></div>
+      <div class="folder-bar"><span>←　↑</span><span class="folder-path">PC　›　ビデオ</span></div>
+      <div class="file-browser">
+        <aside>クイック アクセス<br><br>デスクトップ<br><br>ドキュメント<br><br><b>ビデオ</b></aside>
+        <div class="file-list"><div>名前　　　　　　　　　　　種類</div><p>このフォルダーは空です。</p></div>
+      </div>
+      <div class="save-fields"><label for="filename">ファイル名:</label><input id="filename" value="capture.mp4"><span>ファイルの種類:</span><div>MP4 video (*.mp4)</div></div>
+      <div class="dialog-actions"><button id="save-button">保存</button><button id="cancel-save">キャンセル</button></div>
+    </section>
+
+    <section id="success-dialog" class="window success-dialog" role="dialog" aria-label="win-cap 保存完了" hidden>
+      <div class="titlebar"><span>win-cap</span><span class="window-buttons">×</span></div>
+      <div class="success-content"><span class="info-icon">i</span><div><p>保存しました。</p><div id="saved-path"></div></div></div>
+      <div class="dialog-actions"><button id="success-ok">OK</button></div>
+    </section>
+
+    <div class="taskbar"><div class="windows-mark"><i></i><i></i><i></i><i></i></div><span class="taskbar-app">▤</span><span id="taskbar-recorder">win-cap</span><span class="taskbar-clock">14:30</span></div>
+    <div id="demo-cursor" hidden><svg viewBox="0 0 28 34" width="28" height="34"><path d="M3 2V27L9 21L14 31L19 29L14 19H24Z" fill="white" stroke="#172334" stroke-width="2" stroke-linejoin="round"/></svg></div>
+    <div id="click-ring" hidden></div>
+    <div id="loop-fade"></div>
+  </main>
+  <footer><span id="step-number">01</span><div><strong id="step-title">録画する範囲を選ぶ</strong><span id="step-detail">ドラッグした部分を録画します。</span></div><div id="step-progress" class="step-progress"></div></footer>
+  <script src="mock.js"></script>
+</body>
+</html>

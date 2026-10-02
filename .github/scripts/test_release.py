@@ -62,6 +62,11 @@ class ReleaseTests(unittest.TestCase):
             source = self.root / name
             source.parent.mkdir(parents=True, exist_ok=True)
             source.write_text(f"Contents of {name}\n", encoding="utf-8")
+        for name, contents in (("docs/assets/demo.gif", b"GIF89a demo"),
+                               ("docs/assets/demo.mp4", b"MP4 demo")):
+            source = self.root / name
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_bytes(contents)
         return binary
 
     def test_package_contents_and_checksum(self):
@@ -74,8 +79,11 @@ class ReleaseTests(unittest.TestCase):
                 "win-cap.exe", "README.md", "CHANGELOG.md", "LICENSE",
                 "THIRD_PARTY_NOTICES.txt",
                 "docs/DEVELOPMENT.md", "docs/RELEASING.md",
+                "docs/assets/demo.gif", "docs/assets/demo.mp4",
             })
             self.assertEqual(bundle.read("win-cap.exe"), binary.read_bytes())
+            for name in ("docs/assets/demo.gif", "docs/assets/demo.mp4"):
+                self.assertEqual(bundle.read(name), (self.root / name).read_bytes())
             self.assertEqual(bundle.testzip(), None)
         checksum = hashlib.sha256((output / archive).read_bytes()).hexdigest()
         self.assertEqual((output / f"{archive}.sha256").read_bytes(),

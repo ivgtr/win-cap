@@ -42,6 +42,27 @@ GPU上の合成画像を使ったMP4生成テストは、Windows実機で明示�
 cargo test --locked --test encoding -- --ignored --nocapture
 ```
 
+## 操作デモの再生成
+
+READMEの[GIF](assets/demo.gif)と[MP4](assets/demo.mp4)は、`src/ui.rs`の配置・文言・操作順を基準にした操作モックです。Windows実機での録画・保存の検証には使いません。モックと制作ツールは[`tools/demo`](../tools/demo/)に置き、製品の依存関係とは分離しています。
+
+Node.js 22以上と日本語フォントを用意し、リポジトリのルートから実行します。依存バージョンは`tools/demo/package-lock.json`で固定しています。
+
+```sh
+mkdir -p tools/demo/.cache tools/demo/.work
+XDG_CACHE_HOME="$PWD/tools/demo/.cache" TMPDIR="$PWD/tools/demo/.work" \
+  npm --prefix tools/demo ci --cache "$PWD/tools/demo/.cache"
+npm --prefix tools/demo exec -- playwright install chromium
+npm --prefix tools/demo run preview
+npm --prefix tools/demo run render
+```
+
+`preview`は実操作の検査と開始・中間・結果・ループの静止画を`tools/demo/.work/previews/`へ出力します。`render`は同じ検査後に両形式を生成し、フレーム数・尺・最後までのデコードを確認します。生成後の映像から取り出した静止画も同じフォルダーに残るので、掲載サイズで日本語とカーソル位置を確認してください。
+
+既存のChromiumを指定する場合は`npm --prefix tools/demo run render -- --browser-executable /path/to/chromium`を使います。LinuxではChromiumが必要とするシステムライブラリーと日本語フォントも必要です。今回の生成にはDroid Sans Fallbackを使っています。
+
+制作条件は20秒・音声なし。MP4は1024 × 704px・24fps・H.264、GIFは960 × 660px・12fps相当・無限ループです。[`mock.js`](../tools/demo/mock.js)の状態遷移と時刻指定描画を共有し、「範囲選択 → 録画 → ホットキーで停止 → MP4保存」を撮影します。アプリの表示バージョンは`Cargo.toml`から取得します。画面や操作を変更したら両形式を再生成してください。
+
 ## 検証記録と未確認事項
 
 v0.1.1では、小範囲の圧縮経路の修正後に48 × 48、64 × 64、104 × 84、256 × 256、640 × 480pxの合成画像から、サイズを変えずMP4を生成できることと、1秒の静止映像の尺を確認しました。
