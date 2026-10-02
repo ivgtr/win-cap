@@ -6,7 +6,7 @@ v0.1.1では開始時の保存先指定をなくし、小範囲の録画エラ�
 
 ## ダウンロード
 
-GitHubリポジトリの「Releases」から`win-cap-<バージョン>-windows-x64.zip`をダウンロードし、展開して`win-cap.exe`を起動してください。インストールやRustの導入は不要です。変更内容は[CHANGELOG.md](CHANGELOG.md)に記載しています。
+GitHubリポジトリの「Releases」から`win-cap-<バージョン>-windows-x64.zip`をダウンロードし、展開して`win-cap.exe`を起動してください。インストールやRustの導入は不要です。各版の変更内容はReleasesのリリースノートに記載します。[CHANGELOG.md](CHANGELOG.md)には手動で補足した利用者向けの履歴を残しています。
 
 同じリリースの`.zip.sha256`とZIPを同じフォルダーに置くと、PowerShellでダウンロードしたZIPのSHA-256を照合できます（以下はv0.1.1の例）。
 
@@ -82,34 +82,30 @@ GitHub Actionsでは同じ検査・ビルドを実行し、バージョン付き
 
 ## GitHubリリースの設計と手順
 
-通常のブランチpush・Pull Request・手動実行では、検査・ビルドと成果物の保存までを行います。`vMAJOR.MINOR.PATCH`タグのpushでは、同じWindowsビルドの成功後にGitHub Releaseを自動公開します。手動実行でタグを選んでも公開しません。
+公開はGitHub Actionsの`Release`を手動実行して行います。通常のブランチpush・Pull Request・`Windows CI`の手動実行は検査・ビルドと成果物の保存までを行い、タグのpushでは公開しません。`Release`は同じWindows CIを再利用し、検査・ビルドとZIPの検証に成功した場合だけ公開します。
 
-バージョンの正本は`Cargo.toml`です。タグは`v`を付けた同じバージョンでなければビルド前に停止します。現在は安定版形式のみを受け付け、プレリリース用の接尾辞やビルドメタデータは受け付けません。`CHANGELOG.md`の同じバージョンの節をリリース本文として使用し、節がない場合や空の場合も停止します。
+バージョンの正本は`Cargo.toml`です。ワークフローが`v`を付けた同じバージョンのタグを作成するため、バージョンの手入力や事前のタグpushは不要です。現在は安定版形式のみを受け付け、プレリリース用の接尾辞やビルドメタデータは受け付けません。タグの対象は実行開始時のコミットSHAに固定し、ビルド中にブランチが更新されても、検査したコミットを公開します。
 
-配布するZIPには`win-cap.exe`、README、CHANGELOG、MITライセンス、依存ライブラリーのライセンス表記を含めます。リリース用ジョブは同じ実行の成果物を取得してSHA-256を照合し、ZIPと`.zip.sha256`を添付します。[GitHub CLIの`--verify-tag`](https://cli.github.com/manual/gh_release_create)で既存のタグを必須とし、書き込み権限はそのジョブだけに付与します。認証にはGitHub Actionsが発行する`GITHUB_TOKEN`を使います。
+リリース本文は[GitHub標準の自動生成](https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes)を使います。下書き・プレリリースを除いた公開済みリリースを取得し、公開日時が最も新しい版のタグを比較の起点として明示します。前回以降のマージ済みPR、貢献者、全差分への比較リンクが生成されます。直接pushしたコミットはPR一覧には入らず、比較リンクで確認できます。初回は比較元を指定せず、GitHubが初回の本文を生成します。
 
-初回はGitHubにリポジトリを作成し、そのURLを`origin`に設定して`main`をpushしてください。リポジトリでGitHub Actionsが有効であり、組織のポリシーがリリース用ジョブの`contents: write`を許可することが必要です。
+配布するZIPには`win-cap.exe`、README、CHANGELOG、MITライセンス、依存ライブラリーのライセンス表記を含めます。公開用ジョブは同じ実行の成果物を取得してSHA-256を照合し、ZIPと`.zip.sha256`を添付します。既存の同名タグがある場合は停止し、書き込み権限は公開用ジョブだけに付与します。認証にはGitHub Actionsが発行する`GITHUB_TOKEN`を使います。タグや前回リリースの取得に失敗した場合も停止し、初回リリースとして扱い直しません。
+
+初回はGitHubにリポジトリを作成し、そのURLを`origin`に設定して`main`をpushしてください。手動実行ボタンを使うには`Release`ワークフローがデフォルトブランチに存在する必要があります。リポジトリでGitHub Actionsが有効であり、組織のポリシーが公開用ジョブの`contents: write`を許可することが必要です。
 
 リリース時は次の手順で進めます。
 
-1. `Cargo.toml`のバージョンと`Cargo.lock`の自分のパッケージのバージョンを更新し、`CHANGELOG.md`に対応する節を追記します。初回v0.1.1では更新不要です。
-2. 本文末尾の実機確認を行い、結果に応じてCHANGELOGの既知の制約を更新します。通常のCIではGPUによる録画テストや操作画面の確認は行いません。
-3. 変更をコミットして`main`をpushし、Actionsの成功を確認します。
-4. 同じコミットにタグを付け、タグだけをpushします（v0.1.1の例）。
+1. `Cargo.toml`のバージョンと`Cargo.lock`の自分のパッケージのバージョンを更新します。初回v0.1.1では更新不要です。PRのタイトルはリリースノートにも載るため、変更内容が分かる名前にします。
+2. 本文末尾の実機確認を行い、結果に応じてREADMEやCHANGELOGの既知の制約を更新します。通常のCIではGPUによる録画テストや操作画面の確認は行いません。
+3. 変更をコミットして`main`をpushし、`Windows CI`の成功を確認します。
+4. GitHubの「Actions」→「Release」→「Run workflow」を開き、公開するブランチ（通常は`main`）を選んで実行します。この操作で検査・ビルドの後に自動公開します。
+5. `publish`ジョブとReleasesのZIP・SHA-256・前回からのリリースノートを確認します。
 
-   ```sh
-   git tag -a v0.1.1 -m "Release v0.1.1"
-   git push origin v0.1.1
-   ```
+検査・ビルド・チェックサム・GitHub APIの取得に失敗した場合は公開しません。既存のタグやリリースを上書きせず、同じバージョンの再公開はエラーとして停止します。[GitHub CLI](https://cli.github.com/manual/gh_release_create)の`--fail-on-no-commits`で新しいコミットがない場合も停止します（初回は対象外）。作成・添付の途中で失敗し、未完成の下書きやタグが残った場合は、未公開であることと対象コミットを確認し、該当する下書き・タグを削除してから再実行してください。公開済みの版に修正が必要な場合は、新しいバージョンで公開します。
 
-5. Actionsの`release`ジョブとReleasesの添付ファイルを確認します。タグのpushが公開操作になるため、実機確認とリリース本文の確認はタグ作成前に終えてください。
-
-検査・ビルド・チェックサムの検証に失敗した場合は公開しません。既存のリリースを上書きせず、同じタグの再公開はエラーとして停止します。作成・添付の途中で失敗し、未完成の下書きが残った場合は、その下書きを確認・削除してから失敗したジョブを再実行してください。公開済みの版に修正が必要な場合は、新しいバージョンで公開します。
-
-パッケージ処理はPython 3.11以上の標準ライブラリーだけで実行できます。ローカルではWindowsでビルドしてから、次を実行してください。既に同じ出力がある場合は上書きせず停止するため、該当するZIP・SHA-256・`dist/release-notes.md`を削除してから再実行します。
+パッケージ処理はPython 3.11以上の標準ライブラリーだけで実行できます。ローカルではWindowsでビルドしてから、次を実行してください。既に同じ出力がある場合は上書きせず停止するため、該当するZIP・SHA-256を削除してから再実行します。
 
 ```sh
-python .github/scripts/release.py check --tag v0.1.1
+python .github/scripts/release.py check
 python .github/scripts/release.py package
 ```
 

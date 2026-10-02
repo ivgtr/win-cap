@@ -1,0 +1,54 @@
+name: Release
+run-name: Release from ${{ github.ref_name }} by @${{ github.actor }}
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    uses: ./.github/workflows/windows.yml
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: win-cap-windows-x64
+          path: dist
+      - name: Verify and publish
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
+          RELEASE_ARCHIVE: ${{ needs.build.outputs.archive }}
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          sha256sum --check "$RELEASE_ARCHIVE.sha256"
+          existing_ref=$(gh api "repos/$GH_REPO/git/matching-refs/tags/$RELEASE_TAG" \
+            --jq ".[] | select(.ref == \"refs/tags/$RELEASE_TAG\") | .ref")
+          if [[ -n "$existing_ref" ]]; then
+            echo "Release tag $RELEASE_TAG already exists; choose a new version." >&2
+            exit 1
+          fi
+          previous_tag=$(gh api --paginate --slurp "repos/$GH_REPO/releases?per_page=100" | \
+            jq -r '[.[][] | select(.draft == false and .prerelease == false)] | sort_by(.published_at) | last | .tag_name // empty')
+          notes_args=(--generate-notes)
+          if [[ -n "$previous_tag" ]]; then
+            notes_args+=(--notes-start-tag "$previous_tag")
+          fi
+          gh release create "$RELEASE_TAG" \
+            "$RELEASE_ARCHIVE" "$RELEASE_ARCHIVE.sha256" \
+            --target "$RELEASE_COMMIT" --title "win-cap $RELEASE_TAG" \
+            "${notes_args[@]}" --fail-on-no-commits
