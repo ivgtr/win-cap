@@ -26,7 +26,8 @@ def package(archive: str) -> None:
     files = {
         "win-cap.exe": ROOT / "target/x86_64-pc-windows-msvc/release/win-cap.exe",
         **{name: ROOT / name for name in (
-            "README.md", "CHANGELOG.md", "LICENSE", "THIRD_PARTY_NOTICES.txt"
+            "README.md", "CHANGELOG.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
+            "docs/DEVELOPMENT.md", "docs/RELEASING.md"
         )},
     }
     for source in files.values():

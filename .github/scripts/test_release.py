@@ -57,8 +57,11 @@ class ReleaseTests(unittest.TestCase):
         binary = self.root / "target/x86_64-pc-windows-msvc/release/win-cap.exe"
         binary.parent.mkdir(parents=True)
         binary.write_bytes(b"MZ\x00test executable")
-        for name in ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt"):
-            (self.root / name).write_text(f"Contents of {name}\n", encoding="utf-8")
+        for name in ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
+                     "docs/DEVELOPMENT.md", "docs/RELEASING.md"):
+            source = self.root / name
+            source.parent.mkdir(parents=True, exist_ok=True)
+            source.write_text(f"Contents of {name}\n", encoding="utf-8")
         return binary
 
     def test_package_contents_and_checksum(self):
@@ -70,6 +73,7 @@ class ReleaseTests(unittest.TestCase):
             self.assertEqual(set(bundle.namelist()), {
                 "win-cap.exe", "README.md", "CHANGELOG.md", "LICENSE",
                 "THIRD_PARTY_NOTICES.txt",
+                "docs/DEVELOPMENT.md", "docs/RELEASING.md",
             })
             self.assertEqual(bundle.read("win-cap.exe"), binary.read_bytes())
             self.assertEqual(bundle.testzip(), None)
