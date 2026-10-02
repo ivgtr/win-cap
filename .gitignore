@@ -1,0 +1,21 @@
+# Build and release artifacts
+/target/
+/dist/
+/package/
+/win-cap-windows-*.zip
+
+# Recorded videos
+*.mp4
+
+# Local environment and tool settings
+.env
+.env.*
+!.env.example
+/.aws/
+/.codex/
+/.agents/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

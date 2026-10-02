@@ -1,0 +1,42 @@
+name: Windows build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+          rustup default stable
+      - name: Verify
+        run: |
+          cargo fmt --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --locked
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo clippy --locked --all-targets -- -D warnings
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build
+        run: cargo build --release --locked --target x86_64-pc-windows-msvc
+      - name: Package
+        run: |
+          New-Item -ItemType Directory -Path package
+          Copy-Item target/x86_64-pc-windows-msvc/release/win-cap.exe package/
+          Copy-Item README.md, LICENSE, THIRD_PARTY_NOTICES.txt package/
+          Compress-Archive -Path package/* -DestinationPath win-cap-windows-x64.zip
+      - uses: actions/upload-artifact@v7
+        with:
+          name: win-cap-windows-x64
+          path: win-cap-windows-x64.zip
+          if-no-files-found: error
