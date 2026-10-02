@@ -1,24 +1,51 @@
-name: Windows build
+name: Windows build and release
 
 on:
   push:
+    branches: ['**']
+    tags: ['v*']
   pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-2022
+    timeout-minutes: 30
+    outputs:
+      archive: ${{ steps.release-info.outputs.archive }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Validate release metadata
+        id: release-info
+        env:
+          RELEASE_TAG: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+        run: |
+          if ($env:RELEASE_TAG) {
+            python .github/scripts/release.py check --tag "$env:RELEASE_TAG"
+          } else {
+            python .github/scripts/release.py check
+          }
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Test release packaging
+        run: python .github/scripts/test_release.py
       - name: Set up Rust
         run: |
           rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           rustup default stable
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify
         run: |
           cargo fmt --check
@@ -30,13 +57,39 @@ jobs:
       - name: Build
         run: cargo build --release --locked --target x86_64-pc-windows-msvc
       - name: Package
-        run: |
-          New-Item -ItemType Directory -Path package
-          Copy-Item target/x86_64-pc-windows-msvc/release/win-cap.exe package/
-          Copy-Item README.md, LICENSE, THIRD_PARTY_NOTICES.txt package/
-          Compress-Archive -Path package/* -DestinationPath win-cap-windows-x64.zip
-      - uses: actions/upload-artifact@v7
+        run: python .github/scripts/release.py package
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: win-cap-windows-x64
-          path: win-cap-windows-x64.zip
+          path: |
+            dist/${{ steps.release-info.outputs.archive }}
+            dist/${{ steps.release-info.outputs.archive }}.sha256
+            dist/release-notes.md
           if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: win-cap-windows-x64
+          path: dist
+      - name: Verify and publish
+        working-directory: dist
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_ARCHIVE: ${{ needs.build.outputs.archive }}
+        run: |
+          sha256sum --check "$RELEASE_ARCHIVE.sha256"
+          gh release create "$RELEASE_TAG" \
+            "$RELEASE_ARCHIVE" "$RELEASE_ARCHIVE.sha256" \
+            --verify-tag --title "win-cap $RELEASE_TAG" \
+            --notes-file release-notes.md

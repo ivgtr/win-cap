@@ -4,6 +4,18 @@ Windows向けの小さな範囲録画アプリ。ScreenToGifの範囲選択と�
 
 v0.1.1では開始時の保存先指定をなくし、小範囲の録画エラーを修正しました。タイトルバーのバージョンで修正版を確認できます。
 
+## ダウンロード
+
+GitHubリポジトリの「Releases」から`win-cap-<バージョン>-windows-x64.zip`をダウンロードし、展開して`win-cap.exe`を起動してください。インストールやRustの導入は不要です。変更内容は[CHANGELOG.md](CHANGELOG.md)に記載しています。
+
+同じリリースの`.zip.sha256`とZIPを同じフォルダーに置くと、PowerShellでダウンロードしたZIPのSHA-256を照合できます（以下はv0.1.1の例）。
+
+```powershell
+$expected = (Get-Content win-cap-0.1.1-windows-x64.zip.sha256).Split(' ')[0]
+$actual = (Get-FileHash win-cap-0.1.1-windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
+if ($actual -ne $expected) { throw 'ZIPのSHA-256が一致しません。再ダウンロードしてください。' }
+```
+
 ## 使い方
 
 1. `win-cap.exe`を起動し、「範囲を選択」を押します。
@@ -66,7 +78,42 @@ cargo clippy --locked --all-targets -- -D warnings
 cargo fmt --check
 ```
 
-GitHub ActionsにもWindowsでの検査・ビルドと、実行ファイルのZIP保存を用意しています。
+GitHub Actionsでは同じ検査・ビルドを実行し、バージョン付きZIPとSHA-256をActionsの成果物として14日間保存します。
+
+## GitHubリリースの設計と手順
+
+通常のブランチpush・Pull Request・手動実行では、検査・ビルドと成果物の保存までを行います。`vMAJOR.MINOR.PATCH`タグのpushでは、同じWindowsビルドの成功後にGitHub Releaseを自動公開します。手動実行でタグを選んでも公開しません。
+
+バージョンの正本は`Cargo.toml`です。タグは`v`を付けた同じバージョンでなければビルド前に停止します。現在は安定版形式のみを受け付け、プレリリース用の接尾辞やビルドメタデータは受け付けません。`CHANGELOG.md`の同じバージョンの節をリリース本文として使用し、節がない場合や空の場合も停止します。
+
+配布するZIPには`win-cap.exe`、README、CHANGELOG、MITライセンス、依存ライブラリーのライセンス表記を含めます。リリース用ジョブは同じ実行の成果物を取得してSHA-256を照合し、ZIPと`.zip.sha256`を添付します。[GitHub CLIの`--verify-tag`](https://cli.github.com/manual/gh_release_create)で既存のタグを必須とし、書き込み権限はそのジョブだけに付与します。認証にはGitHub Actionsが発行する`GITHUB_TOKEN`を使います。
+
+初回はGitHubにリポジトリを作成し、そのURLを`origin`に設定して`main`をpushしてください。リポジトリでGitHub Actionsが有効であり、組織のポリシーがリリース用ジョブの`contents: write`を許可することが必要です。
+
+リリース時は次の手順で進めます。
+
+1. `Cargo.toml`のバージョンと`Cargo.lock`の自分のパッケージのバージョンを更新し、`CHANGELOG.md`に対応する節を追記します。初回v0.1.1では更新不要です。
+2. 本文末尾の実機確認を行い、結果に応じてCHANGELOGの既知の制約を更新します。通常のCIではGPUによる録画テストや操作画面の確認は行いません。
+3. 変更をコミットして`main`をpushし、Actionsの成功を確認します。
+4. 同じコミットにタグを付け、タグだけをpushします（v0.1.1の例）。
+
+   ```sh
+   git tag -a v0.1.1 -m "Release v0.1.1"
+   git push origin v0.1.1
+   ```
+
+5. Actionsの`release`ジョブとReleasesの添付ファイルを確認します。タグのpushが公開操作になるため、実機確認とリリース本文の確認はタグ作成前に終えてください。
+
+検査・ビルド・チェックサムの検証に失敗した場合は公開しません。既存のリリースを上書きせず、同じタグの再公開はエラーとして停止します。作成・添付の途中で失敗し、未完成の下書きが残った場合は、その下書きを確認・削除してから失敗したジョブを再実行してください。公開済みの版に修正が必要な場合は、新しいバージョンで公開します。
+
+パッケージ処理はPython 3.11以上の標準ライブラリーだけで実行できます。ローカルではWindowsでビルドしてから、次を実行してください。既に同じ出力がある場合は上書きせず停止するため、該当するZIP・SHA-256・`dist/release-notes.md`を削除してから再実行します。
+
+```sh
+python .github/scripts/release.py check --tag v0.1.1
+python .github/scripts/release.py package
+```
+
+Rustツールチェーンは既存のCIと同じ`stable`を使用します。同じタグを別の時点でビルドした際のバイナリー完全一致は保証しません。公式ActionsはコミットSHAで固定しています。
 
 ## 検証状況と実機での完了条件
 
