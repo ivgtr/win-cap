@@ -41,6 +41,7 @@ function run(command, args) {
 async function verifyInteractions(page) {
   await page.evaluate(() => window.resetDemo());
   assert.equal(await page.locator('#record-button').isDisabled(), true);
+  assert.equal(await page.locator('#minimize-recording').isChecked(), true);
   await page.locator('#select-button').click();
   assert.equal(await page.locator('#controller').isVisible(), false);
   const desktop = await page.locator('#desktop').boundingBox();
@@ -56,6 +57,7 @@ async function verifyInteractions(page) {
   assert.equal(await page.evaluate(() => window.demoState.cursor), false);
   await page.locator('#record-button').click();
   assert.equal(await page.locator('#controller').isVisible(), false);
+  assert.equal(await page.locator('#minimize-recording').isDisabled(), true);
   await page.keyboard.press('Control+Shift+F10');
   await page.waitForFunction(() => window.demoState.phase === 'save-dialog');
   await page.locator('#cancel-save').click();
@@ -70,8 +72,31 @@ async function verifyInteractions(page) {
   assert.equal(await page.locator('#saved-path').textContent(), 'C:\\Users\\Demo\\Videos\\capture.mp4');
   await page.locator('#success-ok').click();
   assert.equal(await page.locator('#status').textContent(), '保存完了');
+  assert.equal(await page.locator('#minimize-recording').isEnabled(), true);
+  await page.locator('#minimize-recording').uncheck();
+  await page.locator('#record-button').click();
+  assert.equal(await page.locator('#controller').isVisible(), true);
+  assert.equal(await page.locator('#record-button').textContent(), '録画停止');
+  assert.equal(await page.locator('#record-button').isEnabled(), true);
+  for (const id of ['select-button', 'fps', 'include-cursor', 'minimize-recording']) {
+    assert.equal(await page.locator(`#${id}`).isDisabled(), true);
+  }
+  await page.waitForFunction(() => document.getElementById('status').textContent.startsWith('録画中 '));
+  await page.screenshot({ path: path.join(workRoot, 'recording-option-off.png') });
+  await page.locator('#record-button').click();
+  assert.equal(await page.locator('#controller').isVisible(), true);
+  assert.equal(await page.locator('#record-button').isDisabled(), true);
+  await page.waitForFunction(() => window.demoState.phase === 'save-dialog');
+  await page.locator('#cancel-save').click();
+  assert.equal(await page.locator('#minimize-recording').isDisabled(), true);
+  await page.locator('#record-button').click();
+  await page.locator('#save-button').click();
+  await page.waitForFunction(() => window.demoState.phase === 'saved');
+  await page.locator('#success-ok').click();
+  assert.equal(await page.locator('#minimize-recording').isEnabled(), true);
+  assert.equal(await page.locator('#minimize-recording').isChecked(), false);
   await page.evaluate(() => window.resetDemo());
-  console.log('Mock interactions verified: select, FPS/cursor, record, hotkey stop, cancel/retry save, and saved path.');
+  console.log('Mock interactions verified: select, FPS/cursor, minimize on/off, hotkey/button stop, cancel/retry save, and saved path.');
 }
 
 async function inspectMetadata(file, expected) {

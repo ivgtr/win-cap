@@ -7,7 +7,7 @@
   }
   $("app-title").textContent = `win-cap v${requestedVersion} — 範囲録画`;
   const folder = "C:\\Users\\Demo\\Videos\\";
-  const blank = () => ({ phase: "idle", region: null, fps: 30, cursor: true, filename: "capture.mp4", started: 0, changed: 0, completed: 0, notice: false });
+  const blank = () => ({ phase: "idle", region: null, fps: 30, cursor: true, minimize: true, filename: "capture.mp4", started: 0, changed: 0, completed: 0, notice: false });
   let state = blank();
   let mode = "interactive";
   const epoch = performance.now();
@@ -62,6 +62,9 @@
         if (!["idle", "ready", "saved"].includes(current.phase) || ![30, 60].includes(action.value)) throw new Error("Invalid FPS change.");
         next.fps = action.value; break;
       case "cursor": next.cursor = action.value; break;
+      case "minimize":
+        if (!["idle", "ready", "saved"].includes(current.phase) || typeof action.value !== "boolean") throw new Error("Invalid minimize change.");
+        next.minimize = action.value; break;
       case "filename": next.filename = action.value; break;
       case "reset": return blank();
       default: throw new Error(`Unknown mock action: ${action.type}`);
@@ -81,9 +84,9 @@
     [19.1, { type: "reset" }],
   ];
   const cursorPoints = [
-    [0, 925, 485], [1.1, 925, 485], [1.75, 543, 306],
-    [2.35, 36, 96], [2.4, 36, 96], [3.8, 676, 456], [4.3, 741, 306],
-    [5.8, 798, 306], [6.05, 798, 306], [6.3, 460, 180], [7.3, 215, 246],
+    [0, 925, 485], [1.1, 925, 485], [1.75, 543, 266],
+    [2.35, 36, 96], [2.4, 36, 96], [3.8, 676, 456], [4.3, 741, 266],
+    [5.8, 798, 266], [6.05, 798, 266], [6.3, 460, 180], [7.3, 215, 246],
     [8.4, 215, 294], [9.5, 215, 342], [10.4, 736, 480],
     [11.8, 740, 240], [13.6, 740, 240], [14.15, 621, 439],
     [14.55, 795, 475], [18.7, 795, 475], [19.1, 925, 485], [20, 925, 485],
@@ -111,7 +114,7 @@
   function render(current, time) {
     const busy = ["recording", "stopping", "saving"].includes(current.phase);
     const pending = ["save-dialog", "pending"].includes(current.phase);
-    const hiddenController = ["selecting", "recording", "stopping"].includes(current.phase);
+    const hiddenController = current.phase === "selecting" || (current.minimize && ["recording", "stopping"].includes(current.phase));
     $("controller").hidden = hiddenController;
     $("select-button").disabled = busy || pending;
     $("record-button").disabled = !current.region || ["stopping", "saving"].includes(current.phase);
@@ -120,6 +123,8 @@
     $("fps").value = String(current.fps);
     $("include-cursor").disabled = busy || pending;
     $("include-cursor").checked = current.cursor;
+    $("minimize-recording").disabled = busy || pending;
+    $("minimize-recording").checked = current.minimize;
     $("region-label").textContent = current.region ? `${current.region.width} × ${current.region.height} px　位置: ${current.region.x}, ${current.region.y}` : "範囲未選択";
     const messages = {
       idle: "範囲を選び、録画を開始してください。",
@@ -134,6 +139,10 @@
     };
     if (!Object.hasOwn(messages, current.phase)) throw new Error(`Unknown mock phase: ${current.phase}`);
     $("status").textContent = messages[current.phase];
+    if (current.phase === "recording" && time - current.started >= 0.25) {
+      const elapsed = Math.floor(time - current.started);
+      $("status").textContent = `録画中 ${String(Math.floor(elapsed / 60)).padStart(2, "0")}:${String(elapsed % 60).padStart(2, "0")}　${Math.floor((time - current.started) * current.fps)} フレーム`;
+    }
     $("selection-overlay").hidden = current.phase !== "selecting";
     $("selection-rect").hidden = !current.drag;
     if (current.drag) {
@@ -193,6 +202,7 @@
   $("record-button").addEventListener("click", toggle);
   $("fps").addEventListener("change", (event) => dispatch({ type: "fps", value: Number(event.target.value) }));
   $("include-cursor").addEventListener("change", (event) => dispatch({ type: "cursor", value: event.target.checked }));
+  $("minimize-recording").addEventListener("change", (event) => dispatch({ type: "minimize", value: event.target.checked }));
   $("filename").addEventListener("input", (event) => dispatch({ type: "filename", value: event.target.value }));
   $("save-button").addEventListener("click", () => dispatch({ type: "save" }));
   $("cancel-save").addEventListener("click", () => dispatch({ type: "cancel-save" }));

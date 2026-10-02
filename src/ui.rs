@@ -17,6 +17,7 @@ const SELECT: u16 = 100;
 const RECORD: u16 = 101;
 const FPS: u16 = 102;
 const CURSOR: u16 = 103;
+const MINIMIZE: u16 = 104;
 const HOTKEY_RECORD: i32 = 1;
 const HOTKEY_STOP: i32 = 2;
 
@@ -26,6 +27,7 @@ struct App {
     record: HWND,
     fps: HWND,
     cursor: HWND,
+    minimize: HWND,
     status: HWND,
     region_label: HWND,
     region: Option<(Region, usize)>,
@@ -113,6 +115,7 @@ pub fn run() -> Result<(), String> {
             record: HWND::default(),
             fps: HWND::default(),
             cursor: HWND::default(),
+            minimize: HWND::default(),
             status: HWND::default(),
             region_label: HWND::default(),
             region: None,
@@ -128,7 +131,7 @@ pub fn run() -> Result<(), String> {
             left: 0,
             top: 0,
             right: (460.0 * scale) as i32,
-            bottom: (246.0 * scale) as i32,
+            bottom: (284.0 * scale) as i32,
         };
         AdjustWindowRectEx(&mut rect, style, false, WINDOW_EX_STYLE::default())
             .map_err(|e| e.to_string())?;
@@ -250,12 +253,31 @@ pub fn run() -> Result<(), String> {
                 font,
             )?;
             SendMessageW(state.cursor, BM_SETCHECK, Some(WPARAM(1)), Some(LPARAM(0)));
+            state.minimize = child(
+                window,
+                "BUTTON",
+                "録画中は最小化する",
+                20,
+                153,
+                420,
+                28,
+                MINIMIZE,
+                BS_AUTOCHECKBOX as u32 | WS_TABSTOP.0,
+                scale,
+                font,
+            )?;
+            SendMessageW(
+                state.minimize,
+                BM_SETCHECK,
+                Some(WPARAM(1)),
+                Some(LPARAM(0)),
+            );
             state.status = child(
                 window,
                 "STATIC",
                 "範囲を選び、録画を開始してください。",
                 20,
-                162,
+                200,
                 420,
                 26,
                 0,
@@ -268,7 +290,7 @@ pub fn run() -> Result<(), String> {
                 "STATIC",
                 "開始/停止: Ctrl + Shift + F9　停止: Ctrl + Shift + F10",
                 20,
-                205,
+                243,
                 420,
                 25,
                 0,
@@ -368,6 +390,7 @@ impl App {
         let _ = EnableWindow(self.select, !busy && !pending);
         let _ = EnableWindow(self.fps, !busy && !pending);
         let _ = EnableWindow(self.cursor, !busy && !pending);
+        let _ = EnableWindow(self.minimize, !busy && !pending);
         let _ = EnableWindow(
             self.record,
             !self.stopping && (busy || pending || self.region.is_some()),
@@ -448,7 +471,9 @@ impl App {
         }
         self.controls();
         set_text(self.status, "録画を準備しています…");
-        let _ = ShowWindow(self.window, SW_MINIMIZE);
+        if SendMessageW(self.minimize, BM_GETCHECK, None, None).0 == 1 {
+            let _ = ShowWindow(self.window, SW_MINIMIZE);
+        }
         Ok(())
     }
 
