@@ -57,11 +57,11 @@ npm --prefix tools/demo run preview
 npm --prefix tools/demo run render
 ```
 
-`preview`は実操作の検査と3枚の画像を`tools/demo/.work/previews/`へ出力します。`render`は同じ検査後に[範囲選択](assets/step-select.png)、[録画設定](assets/step-ready.png)、[保存先選択](assets/step-save.png)を`docs/assets/`へ出力します。掲載サイズで日本語とカーソル位置を確認してください。
+`preview`は実操作の検査と4枚の画像を`tools/demo/.work/previews/`へ出力します。`render`は同じ検査後に[キービジュアル](assets/hero.png)、[範囲選択](assets/step-select.png)、[録画設定](assets/step-ready.png)、[保存先選択](assets/step-save.png)を`docs/assets/`へ出力します。掲載サイズで日本語とカーソル位置を確認してください。
 
 既存のChromiumを指定する場合は`npm --prefix tools/demo run render -- --browser-executable /path/to/chromium`を使います。LinuxではChromiumが必要とするシステムライブラリーと日本語フォントも必要です。今回の生成にはDroid Sans Fallbackを使っています。
 
-画像は1024 × 704pxです。[`mock.js`](../tools/demo/mock.js)の状態遷移と時刻指定描画を使い、「範囲選択 → 録画設定 → 停止後の保存先選択」を示します。アプリの表示バージョンは`Cargo.toml`から取得します。画面や操作を変更したら画像を再生成してください。
+手順画像は1024 × 704px、キービジュアルはデスクトップ部分を切り出した976 × 552pxです。[`mock.js`](../tools/demo/mock.js)の状態遷移と時刻指定描画を使い、「範囲選択 → 録画設定 → 停止後の保存先選択」を示します。アプリの表示バージョンは`Cargo.toml`から取得します。画面や操作を変更したら画像を再生成してください。
 
 ## 検証記録と未確認事項
 

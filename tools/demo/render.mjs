@@ -98,6 +98,9 @@ async function main() {
 
     const destination = options.preview ? path.join(workRoot, 'previews') : outputRoot;
     await mkdir(destination, { recursive: true });
+    const hero = await page.evaluate(() => window.renderDemoFrame(4.5));
+    assert.equal(hero.phase, 'ready');
+    await page.locator('#desktop').screenshot({ path: path.join(destination, 'hero.png') });
     for (const [name, time, phase] of [
       ['step-select', 3.2, 'selecting'],
       ['step-ready', 4.5, 'ready'],

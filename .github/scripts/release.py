@@ -29,6 +29,7 @@ def package(archive: str) -> None:
             "README.md", "CHANGELOG.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
             "docs/DEVELOPMENT.md", "docs/RELEASING.md",
             "docs/index.html", "docs/style.css", "docs/assets/logo.svg",
+            "docs/assets/hero.png",
             "docs/assets/step-select.png", "docs/assets/step-ready.png",
             "docs/assets/step-save.png"
         )},
