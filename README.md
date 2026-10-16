@@ -1,6 +1,10 @@
 # win-cap
 
+<img src="docs/assets/logo.svg" alt="win-cap ロゴ" width="72" height="72">
+
 Windows向けの範囲録画アプリ。画面の一部を選び、音声なしのMP4として保存できます。
+
+[図で見る使い方](https://ivgtr.github.io/win-cap/)
 
 ## ダウンロード・動作環境
 
@@ -9,10 +13,6 @@ Windows向けの範囲録画アプリ。画面の一部を選び、音声なし�
 Windows 10 **2004以降** / Windows 11、x64に対応します。Windowsの画面取得とH.264エンコードが利用できる環境が必要です。
 
 ## 使い方
-
-![操作デモ](docs/assets/demo.gif)
-
-[MP4で見る](docs/assets/demo.mp4)
 
 1. 「範囲を選択」を押し、画面をドラッグします。Escでキャンセルできます。
 2. 30/60fps、カーソルの有無、「録画中は最小化する」を選び、「録画開始」を押します。最小化は初期状態でオンです。

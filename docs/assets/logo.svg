@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title">
+  <title id="title">win-cap ロゴ</title>
+  <rect x="4" y="4" width="120" height="120" rx="29" fill="#183548"/>
+  <path d="M32 51V35a4 4 0 0 1 4-4h16M76 31h16a4 4 0 0 1 4 4v16M96 77v16a4 4 0 0 1-4 4H76M52 97H36a4 4 0 0 1-4-4V77" fill="none" stroke="#94e4d3" stroke-width="8" stroke-linecap="round"/>
+  <rect x="43" y="43" width="42" height="42" rx="12" fill="#fffaf1"/>
+  <circle cx="64" cy="64" r="13" fill="#f16f67"/>
+  <circle cx="101" cy="27" r="8" fill="#f16f67" stroke="#183548" stroke-width="4"/>
+</svg>

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#183548">
+    <meta name="description" content="win-capはWindowsで画面の一部を選び、音声なしのMP4に保存する範囲録画アプリです。操作の流れを画像で紹介します。">
+    <title>win-cap | 画面の一部を、MP4に。</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="#top" aria-label="win-cap ページの先頭へ">
+          <img src="assets/logo.svg" alt="" width="42" height="42">
+          <span>win-cap</span>
+        </a>
+        <nav aria-label="ページ内メニュー">
+          <a href="#steps">使い方</a>
+          <a class="nav-download" href="https://github.com/ivgtr/win-cap/releases">ダウンロード <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero wrap" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">WINDOWS 10 / 11 · 範囲録画</p>
+          <h1 id="hero-title">画面の一部を、<br><span>MP4に。</span></h1>
+          <p class="lead">見せたい範囲をドラッグして録画。停止してから保存先を選ぶ、音声なしの小さなWindowsアプリです。</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="https://github.com/ivgtr/win-cap/releases">Windows用ZIPをダウンロード <span aria-hidden="true">↗</span></a>
+            <a class="button button-secondary" href="#steps">操作を見る <span aria-hidden="true">↓</span></a>
+          </div>
+          <p class="hero-requirement">Windows 10 2004以降 / Windows 11 · x64</p>
+        </div>
+        <figure class="hero-visual">
+          <div class="visual-topline"><span class="visual-dot"></span> 操作イメージ</div>
+          <a href="assets/step-ready.png" aria-label="録画設定の操作画像を開く"><img src="assets/step-ready.png" alt="範囲を選択した後のwin-cap操作画面。フレームレートなどを指定して録画開始できる" width="1024" height="704"></a>
+          <figcaption>実画面に沿って作った操作モックです。画像を開いて拡大できます。</figcaption>
+        </figure>
+      </section>
+
+      <section class="steps-section" id="steps" aria-labelledby="steps-title">
+        <div class="wrap">
+          <div class="section-heading">
+            <p class="eyebrow">HOW IT WORKS</p>
+            <h2 id="steps-title">録画から保存まで</h2>
+            <p>操作イメージは説明用のモックです。画面の一部を録画して保存する流れを示しています。</p>
+          </div>
+          <ol class="steps">
+            <li class="step">
+              <div class="step-copy"><span class="step-number">01</span><h3>範囲を選ぶ</h3><p>「範囲を選択」を押して、録画したい部分をドラッグします。Escで選択をキャンセルできます。</p></div>
+              <a href="assets/step-select.png" aria-label="範囲選択の操作画像を開く"><img src="assets/step-select.png" alt="ドラッグ中の範囲を枠で示した操作モック" width="1024" height="704" loading="lazy"></a>
+            </li>
+            <li class="step">
+              <div class="step-copy"><span class="step-number">02</span><h3>録画を始める</h3><p>30/60fps、カーソルの有無、録画中に画面を最小化するかを選び、「録画開始」を押します。最小化は初期状態でオンです。</p></div>
+              <a href="assets/step-ready.png" aria-label="録画設定の操作画像を開く"><img src="assets/step-ready.png" alt="録画範囲と録画設定を表示した操作モック" width="1024" height="704" loading="lazy"></a>
+            </li>
+            <li class="step">
+              <div class="step-copy"><span class="step-number">03</span><h3>停止して保存する</h3><p><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>F10</kbd> で停止すると保存先を選べます。最小化をオフにした場合は「録画停止」ボタンも使えます。</p></div>
+              <a href="assets/step-save.png" aria-label="保存先選択の操作画像を開く"><img src="assets/step-save.png" alt="録画停止後に表示されるMP4の保存先選択画面の操作モック" width="1024" height="704" loading="lazy"></a>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="notes wrap" aria-labelledby="notes-title">
+        <div><p class="eyebrow">BEFORE YOU START</p><h2 id="notes-title">使う前に</h2></div>
+        <ul>
+          <li><strong>MP4 / H.264、音声なし</strong><span>画面の更新に応じて、選んだ範囲を録画します。</span></li>
+          <li><strong>保存をやり直せる</strong><span>保存先の選択をキャンセルした場合は、「録画を保存」から再試行できます。</span></li>
+          <li><strong>1つのモニター内で選択</strong><span>48 × 48px以上の範囲を選んでください。</span></li>
+        </ul>
+      </section>
+
+      <section class="closing wrap" aria-label="ダウンロード">
+        <img src="assets/logo.svg" alt="" width="58" height="58">
+        <div><h2>録画したい範囲を、そのままMP4へ。</h2><p>ZIPを展開して win-cap.exe を起動します。</p></div>
+        <a class="button button-primary" href="https://github.com/ivgtr/win-cap/releases">Releasesを見る <span aria-hidden="true">↗</span></a>
+      </section>
+    </main>
+
+    <footer class="site-footer"><div class="wrap"><span>win-cap</span><a href="https://github.com/ivgtr/win-cap">GitHubで見る ↗</a></div></footer>
+  </body>
+</html>

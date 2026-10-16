@@ -42,9 +42,9 @@ GPU上の合成画像を使ったMP4生成テストは、Windows実機で明示�
 cargo test --locked --test encoding -- --ignored --nocapture
 ```
 
-## 操作デモの再生成
+## 操作画像の再生成
 
-READMEの[GIF](assets/demo.gif)と[MP4](assets/demo.mp4)は、`src/ui.rs`の配置・文言・操作順を基準にした操作モックです。Windows実機での録画・保存の検証には使いません。モックと制作ツールは[`tools/demo`](../tools/demo/)に置き、製品の依存関係とは分離しています。
+[図で見る使い方](index.html)のPNG画像は、`src/ui.rs`の配置・文言・操作順を基準にした操作モックです。Windows実機での録画・保存の検証には使いません。モックと制作ツールは[`tools/demo`](../tools/demo/)に置き、製品の依存関係とは分離しています。
 
 Node.js 22以上と日本語フォントを用意し、リポジトリのルートから実行します。依存バージョンは`tools/demo/package-lock.json`で固定しています。
 
@@ -57,11 +57,11 @@ npm --prefix tools/demo run preview
 npm --prefix tools/demo run render
 ```
 
-`preview`は実操作の検査と開始・中間・結果・ループの静止画を`tools/demo/.work/previews/`へ出力します。`render`は同じ検査後に両形式を生成し、フレーム数・尺・最後までのデコードを確認します。生成後の映像から取り出した静止画も同じフォルダーに残るので、掲載サイズで日本語とカーソル位置を確認してください。
+`preview`は実操作の検査と3枚の画像を`tools/demo/.work/previews/`へ出力します。`render`は同じ検査後に[範囲選択](assets/step-select.png)、[録画設定](assets/step-ready.png)、[保存先選択](assets/step-save.png)を`docs/assets/`へ出力します。掲載サイズで日本語とカーソル位置を確認してください。
 
 既存のChromiumを指定する場合は`npm --prefix tools/demo run render -- --browser-executable /path/to/chromium`を使います。LinuxではChromiumが必要とするシステムライブラリーと日本語フォントも必要です。今回の生成にはDroid Sans Fallbackを使っています。
 
-制作条件は20秒・音声なし。MP4は1024 × 704px・24fps・H.264、GIFは960 × 660px・12fps相当・無限ループです。[`mock.js`](../tools/demo/mock.js)の状態遷移と時刻指定描画を共有し、「範囲選択 → 録画 → ホットキーで停止 → MP4保存」を撮影します。アプリの表示バージョンは`Cargo.toml`から取得します。画面や操作を変更したら両形式を再生成してください。
+画像は1024 × 704pxです。[`mock.js`](../tools/demo/mock.js)の状態遷移と時刻指定描画を使い、「範囲選択 → 録画設定 → 停止後の保存先選択」を示します。アプリの表示バージョンは`Cargo.toml`から取得します。画面や操作を変更したら画像を再生成してください。
 
 ## 検証記録と未確認事項
 
@@ -69,7 +69,7 @@ v0.1.1では、小範囲の圧縮経路の修正後に48 × 48、64 × 64、104 
 
 操作画面では104 × 84pxの範囲で、開始時に保存ダイアログが出ないこと、停止後の保存先選択、キャンセル後の再保存と完了通知を確認しました。画質と実再生、長時間録画、複数モニター、負荷比較は未確認です。
 
-未公開の最小化設定追加は、2026-10-03にLinux上で`cargo fmt --check`、`cargo test --locked`（共通部分の4件）、`cargo clippy --locked --all-targets --target x86_64-pc-windows-msvc -- -D warnings`を確認しました。操作モックでは最小化のオン・オフ、ホットキーとボタンでの停止、録画中と未保存時の設定無効化、保存後の再有効化と選択保持を確認し、GIF・MP4を再生成して最後までデコードしました。Windows実機での最小化設定の操作と、操作画面の録画除外は未確認です。
+未公開の最小化設定追加は、2026-10-03にLinux上で`cargo fmt --check`、`cargo test --locked`（共通部分の4件）、`cargo clippy --locked --all-targets --target x86_64-pc-windows-msvc -- -D warnings`を確認しました。当時の操作モックでは最小化のオン・オフ、ホットキーとボタンでの停止、録画中と未保存時の設定無効化、保存後の再有効化と選択保持を確認しました。Windows実機での最小化設定の操作と、操作画面の録画除外は未確認です。
 
 実機確認では次の条件を使います。
 

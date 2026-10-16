@@ -58,15 +58,16 @@ class ReleaseTests(unittest.TestCase):
         binary.parent.mkdir(parents=True)
         binary.write_bytes(b"MZ\x00test executable")
         for name in ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.txt",
-                     "docs/DEVELOPMENT.md", "docs/RELEASING.md"):
+                     "docs/DEVELOPMENT.md", "docs/RELEASING.md", "docs/index.html",
+                     "docs/style.css", "docs/assets/logo.svg"):
             source = self.root / name
             source.parent.mkdir(parents=True, exist_ok=True)
             source.write_text(f"Contents of {name}\n", encoding="utf-8")
-        for name, contents in (("docs/assets/demo.gif", b"GIF89a demo"),
-                               ("docs/assets/demo.mp4", b"MP4 demo")):
+        for name in ("docs/assets/step-select.png", "docs/assets/step-ready.png",
+                     "docs/assets/step-save.png"):
             source = self.root / name
             source.parent.mkdir(parents=True, exist_ok=True)
-            source.write_bytes(contents)
+            source.write_bytes(b"PNG demo")
         return binary
 
     def test_package_contents_and_checksum(self):
@@ -79,10 +80,13 @@ class ReleaseTests(unittest.TestCase):
                 "win-cap.exe", "README.md", "CHANGELOG.md", "LICENSE",
                 "THIRD_PARTY_NOTICES.txt",
                 "docs/DEVELOPMENT.md", "docs/RELEASING.md",
-                "docs/assets/demo.gif", "docs/assets/demo.mp4",
+                "docs/index.html", "docs/style.css", "docs/assets/logo.svg",
+                "docs/assets/step-select.png", "docs/assets/step-ready.png",
+                "docs/assets/step-save.png",
             })
             self.assertEqual(bundle.read("win-cap.exe"), binary.read_bytes())
-            for name in ("docs/assets/demo.gif", "docs/assets/demo.mp4"):
+            for name in ("docs/assets/logo.svg", "docs/assets/step-select.png",
+                         "docs/assets/step-ready.png", "docs/assets/step-save.png"):
                 self.assertEqual(bundle.read(name), (self.root / name).read_bytes())
             self.assertEqual(bundle.testzip(), None)
         checksum = hashlib.sha256((output / archive).read_bytes()).hexdigest()
